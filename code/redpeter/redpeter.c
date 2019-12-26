@@ -1,4 +1,4 @@
-#include "serial_socket_bridge.h"
+#include "redpeter.h"
 
 char device[] = "/dev/cu.usbmodem141301";
 char host[] = "localhost";

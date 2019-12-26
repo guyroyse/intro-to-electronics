@@ -9,7 +9,6 @@
 #include <netdb.h>
 #include <ctype.h>
 
-
 int open_device(char* device);
 int open_socket(char *host, char *port);
 void lookup_host(char *host, char *port, struct addrinfo **addr_info);
