@@ -31,7 +31,7 @@ void loop() {
     }
     
     if (connected == true) {      
-      Serial.print("*2\r\n$3\r\nGET\r\n$13\r\narduino:pin13\r\n");
+      Serial.print("*2\r\n$3\r\nGET\r\n$13\r\narduino:pin:13\r\n");
     }
     
   }
