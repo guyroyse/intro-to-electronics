@@ -12,6 +12,8 @@ int main(int argc, const char *argv[]) {
   int sock_fd = open_socket(host, port);
   printf("Done!\n\n");
 
+  write(dev_fd, "+++", 3);
+
   while (1) read_and_write(dev_fd, sock_fd);
 
   return 0;
@@ -19,7 +21,7 @@ int main(int argc, const char *argv[]) {
 
 int open_device(char *device) {
   
-  int fd = open(device, O_RDONLY);
+  int fd = open(device, O_RDWR | O_NOCTTY);
   if (fd == -1) {
     fprintf(stderr, "Unable to open %s\n", device);
     exit(1);

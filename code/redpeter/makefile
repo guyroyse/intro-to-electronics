@@ -1,4 +1,4 @@
-CC=gcc
+CC=clang
 
 redpeter: redpeter.c
 	$(shell mkdir -p bin)
