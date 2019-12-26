@@ -1,11 +1,14 @@
 {
   "name": "redpeter",
   "version": "1.0.0",
-  "description": "Serial to TCP repeated for Redis.",
+  "description": "Serial to TCP repeater for Redis.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC"
+  "author": "Guy Royse <guy@guyroyse.com>",
+  "dependencies": {
+    "serialport": "^8.0.6"
+  },
+  "private": true
 }
