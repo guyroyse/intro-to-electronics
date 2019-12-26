@@ -1,1 +1,3 @@
-bridge
+bin
+.DS_Store
+.vscode
