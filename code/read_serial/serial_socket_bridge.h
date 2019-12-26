@@ -13,8 +13,5 @@ int open_device(char* device, int *fd);
 int open_socket(char *host, char *port, int *fd);
 int lookup_host(char *host, char *port, struct addrinfo **addr_info);
 int start_read_write_loop(int dev_fd, int sock_fd);
-int read_all_from_socket(int fd);
-int bytes_at_socket(int fd);
 int read_from_socket(int fd);
-
 void print_bytes(char *bytes, int size);

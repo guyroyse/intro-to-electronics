@@ -82,63 +82,55 @@ int lookup_host(char *host, char *port, struct addrinfo **addr_info) {
 
 int start_read_write_loop(int dev_fd, int sock_fd) {
 
-  int status;
+  while (1) {
 
-  char buffer[128];
-  int dev_bytes_read, sock_bytes_read;
+    struct timeval timeout;
+    timeout.tv_sec = 1;
+    timeout.tv_usec = 0;
 
-  do {
+    fd_set set;
+    FD_ZERO(&set);
+    FD_SET(dev_fd, &set);
+    FD_SET(sock_fd, &set);
 
-    printf("Top of loop\n");
+    int select_result = select(FD_SETSIZE, &set, NULL, NULL, &timeout);
+    if (select_result == -1) {
+      printf("Error in select.\n");
+      return -1;
+    } else if (select_result > 0) {
+      printf("%i descriptors available to read\n\n", select_result);
 
-    dev_bytes_read = read(dev_fd, &buffer, 128);
-    if (dev_bytes_read > 0) {
-      printf("%i bytes from device\n", dev_bytes_read);
-      fwrite(buffer, sizeof(char), dev_bytes_read, stdout);
-      printf("\n");
-      print_bytes(buffer, dev_bytes_read);
-    } else {
-      printf("No bytes from device\n");
+      if (FD_ISSET(dev_fd, &set)) {
+
+        printf("Device descriptor available to read\n");
+        printf("-----------------------------------\n");
+
+        char buffer[128];
+
+        int dev_bytes_read = read(dev_fd, &buffer, 128);
+        if (dev_bytes_read > 0) {
+          printf("%i bytes from device\n", dev_bytes_read);
+          fwrite(buffer, sizeof(char), dev_bytes_read, stdout);
+          printf("\n");
+          print_bytes(buffer, dev_bytes_read);
+        } else {
+          printf("No bytes from device\n");
+        }
+
+        printf("\n");
+
+        write(sock_fd, &buffer, dev_bytes_read);
+
+      }
+
+      if (FD_ISSET(sock_fd, &set)) {
+        printf("Socket descriptor available to read\n");
+        printf("-----------------------------------\n");
+        read_from_socket(sock_fd);
+        printf("\n");
+      }
     }
-
-    write(sock_fd, &buffer, dev_bytes_read);
-
-    status = read_all_from_socket(sock_fd);
-
-  } while (dev_bytes_read > 0);
-
-  return 0;
-}
-
-int read_all_from_socket(int fd) {
-  while (bytes_at_socket(fd)) {
-    printf("> Top of socket read loop\n");
-    int status = read_from_socket(fd);
   }
-
-  return 0;
-}
-
-int bytes_at_socket(int fd) {
-
-  fd_set set;
-
-  struct timeval timeout;
-  timeout.tv_sec = 0;
-  timeout.tv_usec = 0;
-
-  int select_result = select(fd + 1, &set, NULL, NULL, &timeout);
-  if (select_result == - 1) {
-    fprintf(stderr, "Error in select for %i", fd);
-    return -1;
-  } else if (select_result == 0) {
-    printf("No bytes availabe from socket\n");
-  } else {
-    printf("%i bytes availabe at socket\n", select_result);
-  }
-
-  return select_result;
-
 }
 
 int read_from_socket(int fd) {
