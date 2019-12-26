@@ -16,3 +16,5 @@ int start_read_write_loop(int dev_fd, int sock_fd);
 int read_all_from_socket(int fd);
 int bytes_at_socket(int fd);
 int read_from_socket(int fd);
+
+void print_bytes(char *bytes, int size);

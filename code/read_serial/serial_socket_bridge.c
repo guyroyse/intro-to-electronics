@@ -11,10 +11,10 @@ int main(int argc, const char *argv[]) {
   int status;
   int dev_fd, sock_fd;
   
-  status = open_device(device, &dev_fd);
+  status = open_socket(host, port, &sock_fd);
   if (status) exit(1);
 
-  status = open_socket(host, port, &sock_fd);
+  status = open_device(device, &dev_fd);
   if (status) exit(1);
 
   status = start_read_write_loop(dev_fd, sock_fd);
@@ -96,6 +96,7 @@ int start_read_write_loop(int dev_fd, int sock_fd) {
       printf("%i bytes from device\n", dev_bytes_read);
       fwrite(buffer, sizeof(char), dev_bytes_read, stdout);
       printf("\n");
+      print_bytes(buffer, dev_bytes_read);
     } else {
       printf("No bytes from device\n");
     }
@@ -129,11 +130,11 @@ int bytes_at_socket(int fd) {
   int select_result = select(fd + 1, &set, NULL, NULL, &timeout);
   if (select_result == - 1) {
     fprintf(stderr, "Error in select for %i", fd);
-    return - 1;
-  }
-  
-  if (select_result == 0) {
+    return -1;
+  } else if (select_result == 0) {
     printf("No bytes availabe from socket\n");
+  } else {
+    printf("%i bytes availabe at socket\n", select_result);
   }
 
   return select_result;
@@ -150,10 +151,18 @@ int read_from_socket(int fd) {
     printf("%i bytes from socket\n", bytes_read);
     fwrite(buffer, sizeof(char), bytes_read, stdout);
     printf("\n");
+    print_bytes(buffer, bytes_read);
   } else {
     printf("No bytes read from socket\n");
   }
 
   return 0;
 
+}
+
+void print_bytes(char *bytes, int size) {
+  for (int i = 0; i < size; i++) {
+    printf( "%i ", bytes[i]);
+  }
+  printf("\n");
 }
