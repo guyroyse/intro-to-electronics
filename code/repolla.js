@@ -1,45 +1,62 @@
-const five = require("johnny-five")
-const redis = require("redis")
+const Five = require("johnny-five")
+const Redis = require("redis")
 
-let board = new five.Board({ repl: true })
-let client = redis.createClient()
-
-let ledPwmPinNumbers = [9, 10, 11]
-let ledPinNumbers = [2, 3, 4, 5, 6, 7, 8, 12, 13]
+let board = new Five.Board({ repl: true })
+let redis = Redis.createClient()
 
 board.on("ready", function() {
 
-  let pwnLeds = ledPwmPinNumbers
-    .map(number => new five.Led(number));
+  setupOutputPins([2, 3, 4, 5, 6, 7, 8])
+  setPwnPins([9, 10, 11])
+  setupInputPins([12, 13])
+  setupAnalogInputPins(['A0', 'A1', 'A2', 'A3', 'A4', 'A5'])
+})
 
-  let leds = ledPinNumbers
-    .map(number => new five.Led(number));
 
-  this.repl.inject({ leds: leds })
+function setupOutputPins(pinNumbers) {
 
-  let pwmKeys = ledPwmPinNumbers.map(number => `arduino:pin:${number}`)
-  let keys = ledPinNumbers.map(number => `arduino:pin:${number}`)
+  let leds = pinNumbers.map(number => new Five.Led(number))
+  let redisKeys = pinNumbers.map(number => `arduino:pin:${number}`)
 
   setInterval(() => {
-
-    client.mget(...pwmKeys, (err, values) => {
+    redis.mget(...redisKeys, (err, values) => {
       values
         .map(value => Number(value))
-        .forEach((value, index) => pwnLeds[index].brightness(value))
+        .forEach((value, index) => value ? leds[index].on() : leds[index].off())
     })
-    
-    client.mget(...keys, (err, values) => {
-      values
-        .map(value => Number(value))
-        .forEach((value, index) => {
-          if (value) {
-            leds[index].on()
-          } else {
-            leds[index].off()
-          }
-        })
-    })
-
   }, 200)
+}
 
-})
+function setPwnPins(pinNumbers) {
+
+  let leds = pinNumbers.map(number => new Five.Led(number))
+  let redisKeys = pinNumbers.map(number => `arduino:pin:${number}`)
+
+  setInterval(() => {
+    redis.mget(...redisKeys, (err, values) => {
+      values
+        .map(value => Number(value))
+        .forEach((value, index) => leds[index].brightness(value))
+    })
+  }, 200)
+}
+
+function setupInputPins(pinNumbers) {
+
+  let pins =  pinNumbers.map(number => new Five.Pin(number));
+  let redisKeys = pinNumbers.map(number => `arduino:pin:${number}`)
+
+  pins.forEach((pin, index) => {
+    pin.read((err, value) => redis.set(redisKeys[index], value))
+  })
+}
+
+function setupAnalogInputPins(pinNumbers) {
+
+  let pins =  pinNumbers.map(number => new Five.Pin(number));
+  let redisKeys = pinNumbers.map(number => `arduino:pin:${number}`)
+
+  pins.forEach((pin, index) => {
+    pin.read((err, value) => redis.set(redisKeys[index], value))
+  })
+}
