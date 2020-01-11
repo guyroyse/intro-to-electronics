@@ -4,6 +4,7 @@ const Redis = require("redis")
 let board = new Five.Board({ repl: true })
 let redis = Redis.createClient()
 
+
 board.on("ready", function() {
 
   setupOutputPins([2, 3, 4, 5, 6, 7, 8])
